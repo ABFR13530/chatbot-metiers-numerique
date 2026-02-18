@@ -209,18 +209,26 @@ def main():
     with st.sidebar:
         st.header("⚙️ Configuration")
 
-        # Clé API Gemini
-        api_key = st.text_input(
-            "🔑 Clé API Google Gemini",
-            type="password",
-            placeholder="AIza...",
-            help="Obtenez votre clé gratuite sur https://aistudio.google.com"
-        )
+        # Clé API Gemini — via Secrets Streamlit ou saisie manuelle
+        api_key = None
+        try:
+            api_key = st.secrets["GEMINI_API_KEY"]
+            st.session_state.api_key_ok = True
+            st.success("✅ Clé API configurée")
+        except:
+            api_key = st.text_input(
+                "🔑 Clé API Google Gemini",
+                type="password",
+                placeholder="AIza...",
+                help="Obtenez votre clé gratuite sur https://aistudio.google.com"
+            )
+            if api_key:
+                os.environ["GOOGLE_API_KEY"] = api_key
+                st.session_state.api_key_ok = True
+                st.success("✅ Clé API configurée")
 
         if api_key:
             os.environ["GOOGLE_API_KEY"] = api_key
-            st.session_state.api_key_ok = True
-            st.success("✅ Clé API configurée")
 
         st.divider()
 
