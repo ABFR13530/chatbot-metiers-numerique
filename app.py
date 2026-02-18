@@ -184,6 +184,33 @@ Réponse :"""
 
 
 # ── Initialisation session state ───────────────────────────────────────────────
+def load_docs_from_folder(folder: str = "docs"):
+    """Charge automatiquement les documents du dossier docs/ au démarrage."""
+    docs = []
+    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=150)
+
+    if not os.path.exists(folder):
+        return docs
+
+    for filename in os.listdir(folder):
+        filepath = os.path.join(folder, filename)
+        ext = filename.split(".")[-1].lower()
+        try:
+            if ext == "pdf":
+                loader = PyMuPDFLoader(filepath)
+            elif ext in ["docx", "doc"]:
+                loader = Docx2txtLoader(filepath)
+            else:
+                continue
+            raw_docs = loader.load()
+            chunks = splitter.split_documents(raw_docs)
+            docs.extend(chunks)
+        except Exception as e:
+            st.warning(f"Erreur chargement {filename} : {e}")
+
+    return docs
+
+
 def init_session():
     defaults = {
         "messages": [],
@@ -192,6 +219,7 @@ def init_session():
         "vectorstore": None,
         "docs_loaded": False,
         "api_key_ok": False,
+        "preload_done": False,
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -229,6 +257,26 @@ def main():
 
         if api_key:
             os.environ["GOOGLE_API_KEY"] = api_key
+
+            # Pré-chargement automatique des docs du dossier docs/
+            if not st.session_state.preload_done:
+                with st.spinner("📚 Chargement des documents de base..."):
+                    try:
+                        embeddings = GoogleGenerativeAIEmbeddings(
+                            model="models/embedding-001",
+                            google_api_key=api_key
+                        )
+                        docs = load_docs_from_folder("docs")
+                        if docs:
+                            st.session_state.vectorstore = build_vectorstore(docs, embeddings)
+                            st.session_state.docs_loaded = True
+                            st.success(f"✅ {len(docs)} extraits chargés depuis /docs")
+                        else:
+                            st.info("📁 Aucun doc dans /docs — mode LLM seul")
+                    except Exception as e:
+                        st.warning(f"Erreur pré-chargement : {e}")
+                    finally:
+                        st.session_state.preload_done = True
 
         st.divider()
 
