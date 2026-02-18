@@ -170,7 +170,7 @@ def search_docs(collection, query, api_key, n=4):
 def detect_profil(message, api_key):
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-2.5-flash-lite")
+        model = genai.GenerativeModel("gemini-2.5-flash")
         prompt = f"""Analyse ce message et détermine le profil parmi : scolaire, emploi, reconversion, indefini.
 - scolaire : élève, étudiant, lycéen, en études, orientation
 - emploi : demandeur d'emploi, cherche du travail, chômage
@@ -195,7 +195,7 @@ Réponds uniquement avec un mot parmi : scolaire, emploi, reconversion, indefini
 
 def generate_response(user_input, profil_key, history, context_docs, api_key):
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-2.5-flash-lite")
+    model = genai.GenerativeModel("gemini-2.5-flash")
     profil = PROFILS[profil_key]
 
     context = "\n\n".join(context_docs) if context_docs else "Aucun document disponible."
@@ -203,18 +203,14 @@ def generate_response(user_input, profil_key, history, context_docs, api_key):
 
     prompt = f"""{profil['system']}
 
----
 EXTRAITS DE DOCUMENTS DE RÉFÉRENCE (utilise-les en priorité si pertinents) :
 {context}
 
----
 HISTORIQUE DE LA CONVERSATION :
 {hist_text}
 
----
 QUESTION DE L'UTILISATEUR : {user_input}
 
----
 INSTRUCTIONS DE RÉPONSE STRICTES :
 - MAXIMUM 3 phrases de réponse, pas plus
 - Ton naturel et conversationnel, comme un vrai conseiller humain
@@ -348,7 +344,7 @@ def main():
             st.rerun()
 
         st.divider()
-        st.caption("POC — Chatbot Métiers du Numérique\n🤖 Gemini Flash 2.0 + RAG")
+        st.caption("POC — Chatbot Métiers du Numérique\n🤖 Gemini 2.5 Flash + RAG")
 
     # Zone principale
     if not st.session_state.api_key_ok:
