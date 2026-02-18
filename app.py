@@ -118,7 +118,7 @@ def search_docs(collection, query, api_key, n=4):
 def detect_profil(message, api_key):
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-1.5-flash-latest")
+        model = genai.GenerativeModel("gemini-2.5-flash-lite")
         prompt = f"""Analyse ce message et détermine le profil parmi : scolaire, emploi, reconversion, indefini.
 - scolaire : élève, étudiant, lycéen, en études, orientation
 - emploi : demandeur d'emploi, cherche du travail, chômage
@@ -143,7 +143,7 @@ Réponds uniquement avec un mot parmi : scolaire, emploi, reconversion, indefini
 
 def generate_response(user_input, profil_key, history, context_docs, api_key):
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-1.5-flash-latest")
+    model = genai.GenerativeModel("gemini-2.5-flash-lite")
     profil = PROFILS[profil_key]
 
     context = "\n\n".join(context_docs) if context_docs else "Aucun document disponible."
